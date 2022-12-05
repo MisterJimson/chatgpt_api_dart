@@ -32,7 +32,7 @@ class GptChatApi {
   });
 
   Future<String> sendMessage(String message) async {
-    final accessToken = await refreshAccessToken();
+    final accessToken = await _refreshAccessToken();
     final conversationId = const Uuid().v4();
 
     final body = ConversationJSONBody(
@@ -79,7 +79,7 @@ class GptChatApi {
     }
   }
 
-  Future<String> refreshAccessToken() async {
+  Future<String> _refreshAccessToken() async {
     final cachedAccessToken = this._accessTokenCache['KEY_ACCESS_TOKEN'];
     if (cachedAccessToken != null) {
       return cachedAccessToken;
