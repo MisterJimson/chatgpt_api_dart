@@ -1,39 +1,26 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# ChatGPT API Dart
+Dart client for the unofficial ChatGPT API
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+Ported from https://github.com/transitive-bullshit/chatgpt-api
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+## Intro
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+This package is a Dart wrapper around [ChatGPT](https://openai.com/blog/chatgpt) by [OpenAI](https://openai.com).
 
-## Features
+You can use it to start building projects powered by ChatGPT like chatbots, websites, etc...
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## How it works
 
-## Getting started
+This package requires a valid session token from ChatGPT to access it's unofficial REST API.
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+To get a session token:
 
-## Usage
+1. Go to https://chat.openai.com/chat and log in or sign up.
+2. Open dev tools.
+3. Open `Application` > `Cookies`
+4. Copy the value for `__Secure-next-auth.session-token` and save it to your environment.
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+When you create the `GptChatApi` client, pass it this token.
 
-```dart
-const like = 'sample';
-```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## Status
+This project was a very quick port of the node version, it requires testing and changes to make it more robust and useable.
