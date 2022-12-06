@@ -8,9 +8,11 @@ const defaultUserAgent =
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36';
 
 const _errorMessages = [
+  // Error received when send incorrect input
   "{\"detail\":\"Hmm...something seems to have gone wrong. Maybe try me again in a little bit.\"}",
 ];
 
+// Allows interfacing with the OpenAI GPT Chat API
 class GptChatApi {
   /// Auth session token. Get from `__Secure-next-auth.session-token` cookie in browser.
   String sessionToken;
@@ -28,6 +30,7 @@ class GptChatApi {
   final _ExpiryMap<String, String> _accessTokenCache =
       _ExpiryMap<String, String>();
 
+  /// Create an instance of [GptChatApi] to interact with the OpenAI GPT Chat API.
   GptChatApi({
     required this.sessionToken,
     this.apiBaseUrl = 'https://chat.openai.com/api',
@@ -35,6 +38,9 @@ class GptChatApi {
     this.userAgent = defaultUserAgent,
   });
 
+  /// Sends a message to the chat API and return the response.
+  /// Pass in a [conversationId] & [parentMessageId] to continue a conversation.
+  /// Throws an [Exception] if the request fails which can happen for a number of reasons.
   Future<ChatResponse> sendMessage(
     String message, {
     String? conversationId,

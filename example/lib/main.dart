@@ -1,4 +1,5 @@
 import 'package:chatgpt_api_dart/chatgpt_api_dart.dart';
+import 'package:example/models.dart';
 import 'package:example/session_token.dart';
 import 'package:flutter/material.dart';
 
@@ -6,7 +7,6 @@ void main() {
   runApp(const MyApp());
 }
 
-// A basic chat app in Flutter.
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -51,73 +51,88 @@ class _ChatPageState extends State<ChatPage> {
           child: Column(
             children: [
               Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    var message = _messages[index];
-                    return ChatMessageWidget(
-                      text: message.text,
-                      chatMessageType: message.chatMessageType,
-                    );
-                  },
-                ),
+                child: _buildList(),
               ),
               Row(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      textCapitalization: TextCapitalization.sentences,
-                      controller: _textController,
-                      decoration: const InputDecoration(
-                        hintText: 'Enter a message',
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: () async {
-                      setState(
-                        () {
-                          _messages.add(
-                            ChatMessage(
-                              text: _textController.text,
-                              chatMessageType: ChatMessageType.user,
-                            ),
-                          );
-                        },
-                      );
-                      var input = _textController.text;
-                      _textController.clear();
-
-                      // Needs a delay or the scroll won't always work.
-                      Future.delayed(const Duration(milliseconds: 50))
-                          .then((_) => _scrollDown());
-
-                      var newMessage = await _api.sendMessage(
-                        input,
-                        conversationId: _conversationId,
-                        parentMessageId: _parentMessageId,
-                      );
-                      setState(() {
-                        _conversationId = newMessage.conversationId;
-                        _parentMessageId = newMessage.messageId;
-                        _messages.add(
-                          ChatMessage(
-                            text: newMessage.message,
-                            chatMessageType: ChatMessageType.bot,
-                          ),
-                        );
-                      });
-                      _textController.clear();
-                    },
-                  ),
+                  _buildInput(),
+                  _buildSubmit(),
                 ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  IconButton _buildSubmit() {
+    return IconButton(
+      icon: const Icon(Icons.send),
+      onPressed: () async {
+        setState(
+          () {
+            _messages.add(
+              ChatMessage(
+                text: _textController.text,
+                chatMessageType: ChatMessageType.user,
+              ),
+            );
+          },
+        );
+        // Save the input and clearing the text field.
+        var input = _textController.text;
+        _textController.clear();
+
+        // Needs a delay or the scroll won't always work.
+        Future.delayed(const Duration(milliseconds: 50))
+            .then((_) => _scrollDown());
+
+        // Send the message to the API, use conversationId and parentMessageId
+        // to keep the thread context.
+        var newMessage = await _api.sendMessage(
+          input,
+          conversationId: _conversationId,
+          parentMessageId: _parentMessageId,
+        );
+        setState(() {
+          _conversationId = newMessage.conversationId;
+          _parentMessageId = newMessage.messageId;
+          _messages.add(
+            ChatMessage(
+              text: newMessage.message,
+              chatMessageType: ChatMessageType.bot,
+            ),
+          );
+        });
+        _textController.clear();
+      },
+    );
+  }
+
+  Expanded _buildInput() {
+    return Expanded(
+      child: TextField(
+        textCapitalization: TextCapitalization.sentences,
+        controller: _textController,
+        decoration: const InputDecoration(
+          hintText: 'Enter a message',
+        ),
+      ),
+    );
+  }
+
+  ListView _buildList() {
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: _messages.length,
+      itemBuilder: (context, index) {
+        var message = _messages[index];
+        return ChatMessageWidget(
+          text: message.text,
+          chatMessageType: message.chatMessageType,
+        );
+      },
     );
   }
 
@@ -128,18 +143,6 @@ class _ChatPageState extends State<ChatPage> {
       curve: Curves.easeOut,
     );
   }
-}
-
-enum ChatMessageType { user, bot }
-
-class ChatMessage {
-  ChatMessage({
-    required this.text,
-    required this.chatMessageType,
-  });
-
-  final String text;
-  final ChatMessageType chatMessageType;
 }
 
 class ChatMessageWidget extends StatelessWidget {
