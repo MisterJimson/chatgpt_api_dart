@@ -9,6 +9,10 @@ This package is a Dart wrapper around [ChatGPT](https://openai.com/blog/chatgpt)
 
 You can use it to start building projects powered by ChatGPT like chatbots, websites, etc...
 
+## Demo
+
+https://user-images.githubusercontent.com/7351329/205991375-d0125d59-6fa4-456d-b4fa-a23c94dc1841.mp4
+
 ## How it works
 
 This package requires a valid session token from ChatGPT to access it's unofficial REST API.
