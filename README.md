@@ -24,3 +24,14 @@ When you create the `GptChatApi` client, pass it this token.
 
 ## Status
 This project was a very quick port of the node version, it requires testing and changes to make it more robust and useable.
+
+## Development
+
+Create these files and add your session token to run the tests and example respectively:
+- `test/session_token.dart`
+- `example/lib/session_token.dart`
+
+Should look something like this:
+```dart
+const SESSION_TOKEN = 'my session token from https://chat.openai.com/chat';
+```
