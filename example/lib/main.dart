@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Chat App',
+      title: 'ChatGPT API Dart Example',
       home: ChatPage(),
     );
   }
@@ -32,6 +32,9 @@ class _ChatPageState extends State<ChatPage> {
   final List<ChatMessage> _messages = [];
   late GptChatApi _api;
 
+  String? _parentMessageId;
+  String? _conversationId;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +44,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat App')),
+      appBar: AppBar(title: const Text('ChatGPT API Dart Example')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -64,6 +67,7 @@ class _ChatPageState extends State<ChatPage> {
                 children: [
                   Expanded(
                     child: TextField(
+                      textCapitalization: TextCapitalization.sentences,
                       controller: _textController,
                       decoration: const InputDecoration(
                         hintText: 'Enter a message',
@@ -85,12 +89,22 @@ class _ChatPageState extends State<ChatPage> {
                       );
                       var input = _textController.text;
                       _textController.clear();
-                      _scrollDown();
-                      var newMessage = await _api.sendMessage(input);
+
+                      // Needs a delay or the scroll won't always work.
+                      Future.delayed(const Duration(milliseconds: 50))
+                          .then((_) => _scrollDown());
+
+                      var newMessage = await _api.sendMessage(
+                        input,
+                        conversationId: _conversationId,
+                        parentMessageId: _parentMessageId,
+                      );
                       setState(() {
+                        _conversationId = newMessage.conversationId;
+                        _parentMessageId = newMessage.messageId;
                         _messages.add(
                           ChatMessage(
-                            text: newMessage,
+                            text: newMessage.message,
                             chatMessageType: ChatMessageType.bot,
                           ),
                         );
@@ -119,7 +133,10 @@ class _ChatPageState extends State<ChatPage> {
 enum ChatMessageType { user, bot }
 
 class ChatMessage {
-  ChatMessage({required this.text, required this.chatMessageType});
+  ChatMessage({
+    required this.text,
+    required this.chatMessageType,
+  });
 
   final String text;
   final ChatMessageType chatMessageType;

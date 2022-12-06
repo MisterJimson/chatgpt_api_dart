@@ -58,7 +58,7 @@ ConversationResponseEvent _$ConversationResponseEventFromJson(
       message: json['message'] == null
           ? null
           : Message.fromJson(json['message'] as Map<String, dynamic>),
-      conversationId: json['conversation_id'] as String?,
+      conversationId: json['conversation_id'] as String,
       error: json['error'] as String?,
     );
 

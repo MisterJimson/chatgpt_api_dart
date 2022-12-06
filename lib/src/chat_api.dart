@@ -7,6 +7,10 @@ import 'package:uuid/uuid.dart';
 const defaultUserAgent =
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36';
 
+const _errorMessages = [
+  "{\"detail\":\"Hmm...something seems to have gone wrong. Maybe try me again in a little bit.\"}",
+];
+
 class GptChatApi {
   /// Auth session token. Get from `__Secure-next-auth.session-token` cookie in browser.
   String sessionToken;
@@ -31,13 +35,17 @@ class GptChatApi {
     this.userAgent = defaultUserAgent,
   });
 
-  Future<String> sendMessage(String message) async {
+  Future<ChatResponse> sendMessage(
+    String message, {
+    String? conversationId,
+    String? parentMessageId,
+  }) async {
     final accessToken = await _refreshAccessToken();
-    final conversationId = const Uuid().v4();
+    parentMessageId ??= Uuid().v4();
 
     final body = ConversationJSONBody(
       action: 'next',
-      conversationId: null,
+      conversationId: conversationId,
       messages: [
         Prompt(
           content: PromptContent(contentType: 'text', parts: [message]),
@@ -46,7 +54,7 @@ class GptChatApi {
         )
       ],
       model: 'text-davinci-002-render',
-      parentMessageId: conversationId,
+      parentMessageId: parentMessageId,
     ).toJson();
 
     final url = '$backendApiBaseUrl/conversation';
@@ -60,6 +68,16 @@ class GptChatApi {
       },
       body: jsonEncode(body),
     );
+
+    if (response.statusCode != 200) {
+      if (response.statusCode == 429) {
+        throw Exception('Rate limited');
+      } else {
+        throw Exception('Failed to send message');
+      }
+    } else if (_errorMessages.contains(response.body)) {
+      throw Exception('OpenAI returned an error');
+    }
 
     String longestLine =
         response.body.split('\n').reduce((a, b) => a.length > b.length ? a : b);
@@ -75,7 +93,11 @@ class GptChatApi {
     if (lastResult == null) {
       throw Exception('No response from OpenAI');
     } else {
-      return lastResult;
+      return ChatResponse(
+        message: lastResult,
+        messageId: messageResult.message!.id,
+        conversationId: messageResult.conversationId,
+      );
     }
   }
 
@@ -109,6 +131,18 @@ class GptChatApi {
       throw Exception('ChatGPT failed to refresh auth token: $err');
     }
   }
+}
+
+class ChatResponse {
+  final String message;
+  final String messageId;
+  final String conversationId;
+
+  ChatResponse({
+    required this.message,
+    required this.messageId,
+    required this.conversationId,
+  });
 }
 
 class _ExpiryMap<K, V> {

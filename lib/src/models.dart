@@ -194,7 +194,7 @@ enum MessageFeedbackRating {
 class ConversationResponseEvent {
   final Message? message;
   @JsonKey(name: 'conversation_id')
-  final String? conversationId;
+  final String conversationId;
   final String? error;
 
   ConversationResponseEvent({
